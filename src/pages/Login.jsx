@@ -46,7 +46,7 @@ export default function Login() {
               className="input-field" 
               value={username} 
               onChange={e => setUsername(e.target.value)} 
-              placeholder="Ex: joaosilva"
+              placeholder="Insira seu usuário"
             />
           </div>
           
@@ -59,6 +59,7 @@ export default function Login() {
                 className="input-field" 
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
+                placeholder='******'
               />
               <button 
                 type="button" 

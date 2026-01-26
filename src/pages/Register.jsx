@@ -66,7 +66,7 @@ export default function Register() {
               className="input-field" 
               value={fullName} 
               onChange={e => setFullName(e.target.value)} 
-              placeholder="Ex: João da Silva" 
+              placeholder="Insira seu nome completo" 
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function Register() {
               className="input-field" 
               value={username} 
               onChange={e => setUsername(e.target.value.replace(/\s/g, ''))} // Remove espaços
-              placeholder="Ex: joaosilva" 
+              placeholder="Crie seu usuário" 
             />
           </div>
 
@@ -90,7 +90,8 @@ export default function Register() {
                 required 
                 className="input-field" 
                 value={password} 
-                onChange={e => setPassword(e.target.value)} 
+                onChange={e => setPassword(e.target.value)}
+                placeholder='******' 
               />
               <button type="button" className="btn-eye" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -107,6 +108,7 @@ export default function Register() {
                 className="input-field" 
                 value={confirmPassword} 
                 onChange={e => setConfirmPassword(e.target.value)} 
+                placeholder='******'    
               />
               <button type="button" className="btn-eye" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
