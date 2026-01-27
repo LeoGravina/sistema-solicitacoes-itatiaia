@@ -9,9 +9,12 @@ body {
   background-color: #f0f2f5; 
   color: #1f2937; 
   -webkit-font-smoothing: antialiased;
-  /* Remove scroll da página principal para usar o layout fixo */
-  overflow: hidden; 
-  height: 100vh;
+  
+  /* --- ALTERAÇÃO 1: Ajuste para permitir scroll híbrido no mobile --- */
+  /* Antes era overflow: hidden. Mudamos para auto para destravar o celular */
+  overflow-y: auto; 
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Remover setas do input number */
@@ -72,10 +75,25 @@ input[type=number] {
    3. LAYOUT PRINCIPAL (APP STYLE)
    ========================================= */
 .app-container { 
-  height: 100vh; /* Altura fixa da tela */
+  height: 100vh; /* Altura fixa da tela para Desktop */
   display: flex; 
   flex-direction: column; 
   overflow: hidden; /* Impede scroll na container principal */
+}
+
+/* --- ALTERAÇÃO 2: A Mágica do Scroll Mobile --- */
+/* Se a tela for pequena, desligamos o modo "App Fixo" para liberar a rolagem nativa */
+@media (max-width: 768px), (max-height: 700px) {
+  .app-container {
+    height: auto; 
+    min-height: 100dvh;
+    overflow: visible; 
+  }
+  /* Destrava o scroll interno do main-content também */
+  .main-content {
+    overflow: visible !important;
+    height: auto !important;
+  }
 }
 
 /* HEADER */
@@ -83,8 +101,10 @@ input[type=number] {
   background: white; 
   border-bottom: 4px solid #233ae0; 
   box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05); 
-  flex-shrink: 0; /* Header não encolhe */
+  flex-shrink: 0; 
   z-index: 100;
+  /* Garante que o header fique fixo no topo no mobile */
+  position: sticky; top: 0;
 }
 .header-content { 
   max-width: 1000px; margin: 0 auto; padding: 1rem 1.5rem; 
@@ -105,17 +125,20 @@ input[type=number] {
 
 /* MAIN CONTENT (SCROLLÁVEL) */
 .main-content { 
-  flex: 1; /* Ocupa todo espaço disponível */
+  flex: 1; 
   width: 100%; 
   max-width: 1000px; 
   margin: 0 auto; 
   padding: 2rem 1rem; 
-  overflow-y: auto; /* Scroll apenas aqui dentro */
+  overflow-y: auto; 
   overflow-x: hidden;
   
-  /* --- CRUCIAL PARA CENTRALIZAR O CONTATO --- */
   display: flex;
   flex-direction: column;
+  
+  /* --- ALTERAÇÃO 3: Espaço para o Footer Flutuante --- */
+  /* Adicionamos padding extra embaixo para o rodapé não cobrir o conteúdo */
+  padding-bottom: 80px;
 }
 
 /* =========================================
@@ -173,8 +196,8 @@ input[type=number] {
 /* LISTA DE CARDS */
 .request-list { 
   display: flex; flex-direction: column; gap: 0.75rem; 
-  flex: 1; /* Ocupa espaço restante */
-  overflow-y: auto; /* Scroll apenas aqui */
+  flex: 1; 
+  overflow-y: auto; 
   padding-right: 4px;
   min-height: 0;
   padding-bottom: 1rem;
@@ -379,41 +402,73 @@ input[type=number] {
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* 8. FOOTER (FIXO, FINO E MODERNO) */
-
+/* =========================================
+   8. FOOTER "PEEKABOO" (ESCONDE-ESCONDE)
+   ========================================= */
+/* --- ALTERAÇÃO 4: Substituição completa do Footer Estático pelo Flutuante --- */
 .main-footer {
-  background-color: white;
-  border-top: 1px solid #e5e7eb;
-  padding: 0.8rem 0; /* Altura reduzida */
+  /* Posição fixa para flutuar sobre o conteúdo */
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  flex-shrink: 0;
-  z-index: 10;
+  z-index: 500;
+  
+  /* Visual Glassmorphism Moderno */
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  
+  padding: 0.8rem 0;
+  
+  /* LÓGICA DE ESCONDER: Empurra 85% para baixo */
+  transform: translateY(85%); 
+  opacity: 0.8;
+  
+  /* Animação Suave */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Indicador visual (alça/puxador) que sugere que é arrastável/clicável */
+.main-footer::before {
+  content: '';
+  position: absolute;
+  top: 8px; /* Posição da alça */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: #cbd5e1;
+  border-radius: 99px;
+}
+
+/* Comportamento: Mostra o footer quando mouse passa ou recebe foco */
+.main-footer:hover, 
+.main-footer:active, 
+.main-footer:focus-within {
+  transform: translateY(0); /* Mostra inteiro */
+  opacity: 1;
 }
 
 .footer-content {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 0 1.5rem; /* Gap dos cantos */
-  display: flex; /* Alinha em linha */
-  justify-content: space-between; /* Um na esquerda, outro na direita */
+  padding: 0.5rem 1.5rem 0; /* Padding top compensa a alça */
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
   color: #6b7280;
 }
 
-/* Remove margens padrão dos parágrafos dentro do footer para alinhar */
-.footer-content p {
-  margin: 0;
-}
+.footer-content p { margin: 0; }
 
 .main-footer strong { color: #233ae0; }
 .main-footer a { color: #233ae0; font-weight: 600; text-decoration: none; transition: opacity 0.2s; }
 .main-footer a:hover { text-decoration: underline; opacity: 0.8; }
 
-/* Ajuste para celular: empilha se a tela for muito pequena */
+/* Ajuste mobile do footer para não quebrar em telas muito estreitas */
 @media (max-width: 600px) {
-  .footer-content {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+  .footer-content { flex-direction: column; gap: 0.5rem; text-align: center; }
 }
