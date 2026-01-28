@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, appId } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText } from 'lucide-react'; // Adicionei FileText
+import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText } from 'lucide-react'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Toast from '../components/Toast';
 import { logAction } from '../utils/logger';
+import Footer from '../components/Footer';
 
 const COLLECTION_NAME = 'cota_requests';
 
@@ -19,7 +20,7 @@ export default function NewRequest() {
   const requesterName = userData?.name || '';
   
   const [releaseDate, setReleaseDate] = useState('');
-  const [reason, setReason] = useState(''); 
+  const [reason, setReason] = useState('');
   const [items, setItems] = useState([{ sku: '', qtd: '' }]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
@@ -40,7 +41,7 @@ export default function NewRequest() {
               return;
             }
             setReleaseDate(data.releaseDate);
-            setReason(data.reason || ''); 
+            setReason(data.reason || '');
             setItems(data.items);
           } else {
             alert("Solicitação não encontrada.");
@@ -74,12 +75,9 @@ export default function NewRequest() {
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
-    
-    // Tratamento especial para SKU (Maiúsculo e sem espaços)
     if (field === 'sku') {
         value = value.toUpperCase().replace(/\s/g, '');
     }
-    
     newItems[index][field] = value;
     setItems(newItems);
   };
@@ -106,7 +104,6 @@ export default function NewRequest() {
       return;
     }
 
-
     const invalidSku = validItems.find(item => item.sku.length !== 10 && item.sku.length !== 11);
     if (invalidSku) {
         showNotification('error', `SKU inválido: ${invalidSku.sku}. O SKU deve ter 10 ou 11 dígitos.`);
@@ -122,12 +119,12 @@ export default function NewRequest() {
         reason: reason,
         items: validItems,
         status: isEditing ? undefined : 'pending',
-        updatedAt: serverTimestamp() 
+        updatedAt: serverTimestamp()
       };
 
       if (!isEditing) {
           payload.createdAt = serverTimestamp();
-          payload.status = 'pending'; 
+          payload.status = 'pending';
       }
 
       if (isEditing) {
@@ -193,7 +190,7 @@ export default function NewRequest() {
                     type="text" 
                     value={reason} 
                     onChange={(e) => setReason(e.target.value)} 
-                    placeholder="Insira o motivo da solicitação"
+                    placeholder="Insira o motivo da soliciação"
                     className="input-field"
                 />
             </div>
@@ -202,7 +199,7 @@ export default function NewRequest() {
                <div className="table-rows scrollable-area">
                 <div className="row-header">
                   <div className="col-num">#</div>
-                  <div className="col-sku">SKU</div>
+                  <div className="col-sku">SKU (10 ou 11 Dígitos)</div>
                   <div className="col-qtd">QTD</div>
                   <div className="col-action"></div>
                 </div>
@@ -217,7 +214,7 @@ export default function NewRequest() {
                         value={item.sku}
                         onChange={(e) => handleItemChange(index, 'sku', e.target.value)}
                         placeholder="CÓDIGO SKU"
-                        maxLength={11} // Limitador HTML
+                        maxLength={11}
                         className="input-field input-sm uppercase"
                       />
                     </div>
@@ -238,22 +235,29 @@ export default function NewRequest() {
                   </div>
                 ))}
               </div>
+              
+              {/* ÁREA DE AÇÃO COMPACTA: ADICIONAR ITEM (ESQUERDA) + SALVAR (DIREITA) */}
               <div className="add-row-area">
-                <button onClick={handleAddItem} className="btn-add"><Plus size={18} /> Adicionar item</button>
+                <button onClick={handleAddItem} className="btn-add">
+                    <Plus size={18} /> Adicionar item
+                </button>
+                
+                <button onClick={handleSave} disabled={loading} className="btn btn-primary">
+                    {loading ? <Loader2 className="spin" size={20} /> : <Save size={20} />}
+                    {loading ? 'Salvando...' : 'Salvar Requisição'}
+                </button>
               </div>
             </div>
 
-            <div className="form-actions">
-              <button onClick={handleSave} disabled={loading} className="btn btn-primary">
-                {loading ? <Loader2 className="spin" size={20} /> : <Save size={20} />}
-                {loading ? 'Salvando...' : isEditing ? 'Atualizar Solicitação' : 'Salvar Requisição'}
-              </button>
-            </div>
           </div>
         </div>
         </div>
       </main>
       {notification && <Toast type={notification.type} message={notification.message} />}
+
+          <Footer />
     </div>
+
+
   );
 }

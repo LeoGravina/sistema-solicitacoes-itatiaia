@@ -86,7 +86,22 @@ export default function Dashboard() {
   };
 
   const handleEdit = (id) => navigate(`/editar/${id}`);
-  const handleExportAll = (e) => { e.stopPropagation(); generateAndDownloadCSV(filteredRequests); };
+  
+  // --- EXPORTAÇÃO FILTRADA ---
+  const handleExportAll = (e) => { 
+    e.stopPropagation(); 
+    
+    // Filtra: Pega tudo que NÃO está completado (Status !== 'completed')
+    const pendingRequests = filteredRequests.filter(req => req.status !== 'completed');
+    
+    if (pendingRequests.length === 0) {
+        alert("Não há solicitações pendentes para exportar.");
+        return;
+    }
+
+    generateAndDownloadCSV(pendingRequests); 
+  };
+
   const handleExportSingle = (req) => { generateAndDownloadCSV([req]); if(isAdmin) logAction(userData, 'EXPORT_CSV', req.id, 'Download individual'); };
   const handleKpiClick = (clickedFilter) => setFilter(filter === clickedFilter ? 'all' : clickedFilter);
 
