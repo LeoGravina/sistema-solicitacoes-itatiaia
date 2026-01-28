@@ -8,8 +8,8 @@ import Header from '../components/Header';
 import { 
   FileSpreadsheet, CheckSquare, Square, Plus, LayoutGrid, CheckCircle2, 
   AlertCircle, CalendarClock, CalendarDays, X, Download, Trash2, Search, 
-  Pencil, ChevronDown, AlertTriangle, HelpCircle 
-} from 'lucide-react'; // Adicionei HelpCircle
+  Pencil, ChevronDown, AlertTriangle, HelpCircle, FileText 
+} from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 
@@ -21,10 +21,9 @@ export default function Dashboard() {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   
-  // MODAIS
-  const [selectedRequest, setSelectedRequest] = useState(null); // Detalhes
-  const [deleteConfirmationId, setDeleteConfirmationId] = useState(null); // Delete
-  const [statusConfirmation, setStatusConfirmation] = useState(null); // Status Change { id, currentStatus }
+  const [selectedRequest, setSelectedRequest] = useState(null); 
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState(null); 
+  const [statusConfirmation, setStatusConfirmation] = useState(null); 
 
   const [itemsLimit, setItemsLimit] = useState(ITEMS_PER_PAGE);
   const [hasMore, setHasMore] = useState(true);
@@ -33,7 +32,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const isAdmin = userData?.role === 'admin';
 
-  // ... (useEffect e LoadMore iguais) ...
   useEffect(() => {
     const q = query(
       collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME),
@@ -50,14 +48,12 @@ export default function Dashboard() {
 
   const loadMore = () => setItemsLimit(prev => prev + 10);
 
-  // --- 1. SOLICITAR TROCA DE STATUS (Abre Modal) ---
   const handleStatusClick = (e, id, currentStatus) => {
-    e.stopPropagation(); // Não abrir detalhes
+    e.stopPropagation(); 
     if (!isAdmin) return;
     setStatusConfirmation({ id, currentStatus });
   };
 
-  // --- 2. CONFIRMAR TROCA DE STATUS ---
   const confirmStatusChange = async () => {
     if (!statusConfirmation) return;
     
@@ -71,11 +67,10 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Erro ao mudar status", error);
     } finally {
-      setStatusConfirmation(null); // Fecha modal
+      setStatusConfirmation(null); 
     }
   };
 
-  // --- DELETE LOGIC ---
   const onRequestDelete = (id) => setDeleteConfirmationId(id);
   
   const confirmDelete = async () => {
@@ -90,7 +85,6 @@ export default function Dashboard() {
     }
   };
 
-  // ... (Helpers iguais) ...
   const handleEdit = (id) => navigate(`/editar/${id}`);
   const handleExportAll = (e) => { e.stopPropagation(); generateAndDownloadCSV(filteredRequests); };
   const handleExportSingle = (req) => { generateAndDownloadCSV([req]); if(isAdmin) logAction(userData, 'EXPORT_CSV', req.id, 'Download individual'); };
@@ -128,9 +122,7 @@ export default function Dashboard() {
       <Header />
       <main className="main-content">
         
-        {/* KPI GRID */}
         <div className="kpi-grid">
-           {/* ... (KPIs mantidos iguais) ... */}
            <div className={`kpi-card blue ${filter === 'all' ? 'active' : ''}`} onClick={() => handleKpiClick('all')}>
             <div className="kpi-icon"><LayoutGrid size={24} /></div>
             <div className="kpi-info"><h3>{stats.total}</h3><p>Total de Solicitações</p></div>
@@ -145,7 +137,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* AÇÕES E BUSCA */}
         <div className="dashboard-actions-row">
            <div className="search-box">
              <Search size={20} className="search-icon" />
@@ -157,7 +148,6 @@ export default function Dashboard() {
            </div>
         </div>
 
-        {/* LISTA */}
         <div className="request-list">
           {filteredRequests.map((req) => (
             <div key={req.id} className={`request-card ${req.status === 'completed' ? 'completed' : ''}`} onClick={() => setSelectedRequest(req)}>
@@ -175,10 +165,8 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              {/* BOTÃO DE STATUS NO CARD */}
               <div className="req-status" onClick={(e) => e.stopPropagation()}>
                 {isAdmin ? (
-                  // Clica aqui e abre o Modal de Confirmação de Status
                   <button className="btn-check" onClick={(e) => handleStatusClick(e, req.id, req.status)} title="Alterar Status">
                     {req.status === 'completed' ? <CheckSquare size={32} color="#16a34a" /> : <Square size={32} color="#d1d5db" />}
                   </button>
@@ -195,11 +183,9 @@ export default function Dashboard() {
 
       <Footer />
 
-      {/* --- MODAL DE DETALHES --- */}
       {selectedRequest && (
         <div className="modal-overlay" onClick={() => setSelectedRequest(null)}>
           <div className="modal-content-large" onClick={(e) => e.stopPropagation()}>
-            {/* ... (Conteúdo do modal de detalhes mantido igual) ... */}
             <div className="modal-header">
               <h3>Detalhes da Solicitação</h3>
               <button className="btn-close" onClick={() => setSelectedRequest(null)}><X size={24} /></button>
@@ -211,6 +197,16 @@ export default function Dashboard() {
                   <div className="detail-item"><label>Liberação</label><p>{formatReleaseDate(selectedRequest.releaseDate)}</p></div>
                   <div className="detail-item"><label>Status</label><span className={`status-badge-text ${selectedRequest.status}`}>{selectedRequest.status === 'completed' ? 'Finalizado' : 'Em Aberto'}</span></div>
                 </div>
+
+                {selectedRequest.reason && (
+                    <div style={{ marginBottom: '1.5rem', background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                        <label style={{ fontSize: '0.75rem', color: '#0284c7', fontWeight: '700', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <FileText size={14} /> Motivo da Solicitação
+                        </label>
+                        <p style={{ margin: '5px 0 0', color: '#0c4a6e', fontSize: '0.95rem' }}>{selectedRequest.reason}</p>
+                    </div>
+                )}
+
                 <div className="items-table-wrapper">
                   <table className="items-table">
                     <thead><tr><th>#</th><th>SKU / Produto</th><th className="text-right">Qtd</th></tr></thead>
@@ -247,7 +243,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* --- MODAL CONFIRMAÇÃO: EXCLUIR --- */}
       {deleteConfirmationId && (
         <div className="modal-overlay-top">
           <div className="modal-confirmation">
@@ -262,7 +257,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* --- MODAL CONFIRMAÇÃO: STATUS (Checklist) --- */}
       {statusConfirmation && (
         <div className="modal-overlay-top">
           <div className="modal-confirmation">

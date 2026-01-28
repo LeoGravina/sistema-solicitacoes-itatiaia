@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore'; // Importei updateDoc e getDoc
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, appId } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom'; // Importei useParams
+import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText } from 'lucide-react'; // Adicionei FileText
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Toast from '../components/Toast';
 import { logAction } from '../utils/logger';
@@ -13,20 +13,18 @@ const COLLECTION_NAME = 'cota_requests';
 export default function NewRequest() {
   const { userData, currentUser } = useAuth();
   const navigate = useNavigate();
-  const { id } = useParams(); // Pega o ID da URL se for edição
+  const { id } = useParams();
   
-  // Estado para saber se é modo edição
   const isEditing = !!id;
-
   const requesterName = userData?.name || '';
   
   const [releaseDate, setReleaseDate] = useState('');
+  const [reason, setReason] = useState(''); 
   const [items, setItems] = useState([{ sku: '', qtd: '' }]);
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(isEditing); // Loading inicial pra buscar dados
+  const [initialLoading, setInitialLoading] = useState(isEditing);
   const [notification, setNotification] = useState(null);
 
-  // --- EFEITO: BUSCAR DADOS SE FOR EDIÇÃO ---
   useEffect(() => {
     if (isEditing) {
       const fetchData = async () => {
@@ -36,13 +34,13 @@ export default function NewRequest() {
           
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // Verifica segurança: só o dono pode editar
             if (data.requesterUid !== currentUser.uid) {
               alert("Você não tem permissão para editar esta solicitação.");
               navigate('/');
               return;
             }
             setReleaseDate(data.releaseDate);
+            setReason(data.reason || ''); 
             setItems(data.items);
           } else {
             alert("Solicitação não encontrada.");
@@ -58,7 +56,6 @@ export default function NewRequest() {
     }
   }, [id, isEditing, navigate, currentUser.uid]);
 
-  // Foco automático (apenas se não estiver carregando dados)
   useEffect(() => {
     if (!initialLoading && items.length > 1) {
       const lastIndex = items.length - 1;
@@ -77,6 +74,12 @@ export default function NewRequest() {
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
+    
+    // Tratamento especial para SKU (Maiúsculo e sem espaços)
+    if (field === 'sku') {
+        value = value.toUpperCase().replace(/\s/g, '');
+    }
+    
     newItems[index][field] = value;
     setItems(newItems);
   };
@@ -87,11 +90,13 @@ export default function NewRequest() {
   };
 
   const handleSave = async () => {
-
-    
-
     if (!releaseDate) {
       showNotification('error', 'Por favor, informe a data de liberação.');
+      return;
+    }
+
+    if (!reason.trim()) {
+      showNotification('error', 'Por favor, informe o motivo da solicitação.');
       return;
     }
 
@@ -101,32 +106,40 @@ export default function NewRequest() {
       return;
     }
 
+
+    const invalidSku = validItems.find(item => item.sku.length !== 10 && item.sku.length !== 11);
+    if (invalidSku) {
+        showNotification('error', `SKU inválido: ${invalidSku.sku}. O SKU deve ter 10 ou 11 dígitos.`);
+        return;
+    }
+
     setLoading(true);
     try {
+      const payload = {
+        requester: requesterName,
+        requesterUid: currentUser.uid,
+        releaseDate: releaseDate,
+        reason: reason,
+        items: validItems,
+        status: isEditing ? undefined : 'pending',
+        updatedAt: serverTimestamp() 
+      };
+
+      if (!isEditing) {
+          payload.createdAt = serverTimestamp();
+          payload.status = 'pending'; 
+      }
+
       if (isEditing) {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, id);
-        await updateDoc(docRef, {
-          releaseDate: releaseDate,
-          items: validItems,
-        });
+        if (payload.status === undefined) delete payload.status;
         
-        // --- LOG ---
+        await updateDoc(docRef, payload);
         await logAction(userData, 'UPDATE_REQUEST', id, 'Solicitação editada');
-        
         showNotification('success', 'Solicitação atualizada com sucesso!');
       } else {
-        const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME), {
-          requester: requesterName,
-          requesterUid: currentUser.uid,
-          releaseDate: releaseDate,
-          items: validItems,
-          status: 'pending',
-          createdAt: serverTimestamp(),
-        });
-        
-        // --- LOG ---
+        const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME), payload);
         await logAction(userData, 'CREATE_REQUEST', docRef.id, 'Nova solicitação criada');
-        
         showNotification('success', 'Solicitação criada com sucesso!');
       }
       
@@ -143,7 +156,7 @@ export default function NewRequest() {
   if (initialLoading) {
     return (
         <div className="app-container" style={{justifyContent:'center', alignItems:'center'}}>
-            <Loader2 className="spin" size={48} color="#0047AB" />
+            <Loader2 className="spin" size={48} color="#233ae0" />
         </div>
     );
   }
@@ -174,11 +187,22 @@ export default function NewRequest() {
               </div>
             </div>
 
+            <div className="form-group">
+                <label><FileText size={16} className="icon-blue" /> Motivo da Solicitação *</label>
+                <input 
+                    type="text" 
+                    value={reason} 
+                    onChange={(e) => setReason(e.target.value)} 
+                    placeholder="Insira o motivo da solicitação"
+                    className="input-field"
+                />
+            </div>
+
             <div className="table-container">
                <div className="table-rows scrollable-area">
                 <div className="row-header">
                   <div className="col-num">#</div>
-                  <div className="col-sku">SKU / PRODUTO</div>
+                  <div className="col-sku">SKU</div>
                   <div className="col-qtd">QTD</div>
                   <div className="col-action"></div>
                 </div>
@@ -193,6 +217,7 @@ export default function NewRequest() {
                         value={item.sku}
                         onChange={(e) => handleItemChange(index, 'sku', e.target.value)}
                         placeholder="CÓDIGO SKU"
+                        maxLength={11} // Limitador HTML
                         className="input-field input-sm uppercase"
                       />
                     </div>
