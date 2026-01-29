@@ -72,7 +72,7 @@ export default function Login() {
             </div>
           </div>
 
-          <button disabled={loading} className="btn btn-primary full-width" type="submit">
+          <button disabled={loading} className="btn btn-primary btn-auth-submit" type="submit">
             {loading ? <Loader2 className="spin" size={20} /> : 'Entrar'}
           </button>
         </form>

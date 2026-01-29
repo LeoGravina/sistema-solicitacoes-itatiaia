@@ -134,16 +134,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 /* =========================================
    4. LISTA DE SOLICITAÇÕES (SCROLLÁVEL)
    ========================================= */
-.request-list { 
-  display: flex; flex-direction: column; gap: 0.6rem; 
-  
-  /* Habilita o scroll apenas aqui */
-  flex: 1; 
-  overflow-y: auto; 
-  padding-right: 6px; 
-  min-height: 0; 
-  padding-bottom: 80px; /* Espaço para o footer não cobrir */
-}
+.request-list { display: flex; flex-direction: column; gap: 0.6rem; flex: 1; overflow-y: auto; padding-right: 6px; in-height: 0; padding-bottom: 100px;}
 /* Scrollbar */
 .request-list::-webkit-scrollbar { width: 5px; }
 .request-list::-webkit-scrollbar-track { background: transparent; }
@@ -217,6 +208,7 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .full-width { width: 100%; }
 .btn-primary { background-color: #233ae0; color: white; box-shadow: 0 4px 6px -1px rgba(35, 58, 224, 0.2); }
 .btn-primary:hover:not(:disabled) { background-color: #1d30b5; }
+.btn-auth-submit { width: 100%; margin-top: 1.5rem; font-size: 1.1rem; padding: 0.8rem; }
 .btn-outline { background-color: white; border: 1.5px solid #16a34a; color: #16a34a; }
 .btn-outline:hover { background-color: #f0fdf4; }
 .btn-ghost { background-color: transparent; color: #6b7280; border: 1px solid transparent; }
@@ -277,3 +269,8 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .main-footer a { color: #233ae0; font-weight: 600; text-decoration: none; transition: opacity 0.2s; }
 .main-footer a:hover { text-decoration: underline; opacity: 0.8; }
 @media (max-width: 600px) { .footer-content { flex-direction: column; gap: 0.4rem; text-align: center; } }
+
+.add-row-area { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; display: flex;justify-content: space-between;align-items: center;flex-wrap: wrap;gap: 10px; }
+.btn-add { background: none; border: 1px solid transparent; color: #233ae0; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 99px; transition: 0.2s; }
+.btn-add:hover { background-color: #eef2ff; border-color: #233ae0; }
+.btn-add[style*="color: #16a34a"]:hover { background-color: #f0fdf4 !important;border-color: #16a34a !important; }

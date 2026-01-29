@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, appId } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText } from 'lucide-react'; 
+import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText, Upload } from 'lucide-react'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Toast from '../components/Toast';
 import { logAction } from '../utils/logger';
-import Footer from '../components/Footer';
 
 const COLLECTION_NAME = 'cota_requests';
 
@@ -25,6 +24,9 @@ export default function NewRequest() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [notification, setNotification] = useState(null);
+  
+  // Referência para o input de arquivo oculto
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isEditing) {
@@ -87,6 +89,63 @@ export default function NewRequest() {
     setTimeout(() => setNotification(null), 4000);
   };
 
+  // --- FUNÇÃO DE IMPORTAR CSV ---
+  const handleImportClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const processCSV = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const text = event.target.result;
+        const lines = text.split('\n');
+        const newItems = [];
+
+        // Começa do 1 para pular cabeçalho (se houver) ou faz lógica de detecção
+        // Aqui assumimos que a primeira linha é cabeçalho se tiver texto 'SKU'
+        
+        lines.forEach((line, index) => {
+            // Remove espaços e quebras de linha
+            const cleanLine = line.trim();
+            if (!cleanLine) return;
+
+            // Tenta separar por ponto e vírgula (Excel PT-BR) ou vírgula (Padrão)
+            let parts = cleanLine.split(';');
+            if (parts.length < 2) parts = cleanLine.split(',');
+
+            if (parts.length >= 2) {
+                const skuRaw = parts[0].toUpperCase().replace(/[^A-Z0-9]/g, '').trim();
+                const qtdRaw = parts[1].replace(/[^0-9]/g, '').trim();
+
+                if (skuRaw === 'SKU' || skuRaw === 'CODIGO') return;
+
+                if (skuRaw && qtdRaw) {
+                    const finalSku = skuRaw.substring(0, 15);
+                    newItems.push({ sku: finalSku, qtd: qtdRaw });
+                }
+            }
+        });
+
+        if (newItems.length > 0) {
+            if (items.length === 1 && items[0].sku === '' && items[0].qtd === '') {
+                setItems(newItems);
+            } else {
+                setItems([...items, ...newItems]);
+            }
+            showNotification('success', `${newItems.length} itens importados com sucesso!`);
+        } else {
+            showNotification('error', 'Nenhum item válido encontrado no arquivo.');
+        }
+        
+        e.target.value = null;
+    };
+    reader.readAsText(file);
+  };
+  // -----------------------------
+
   const handleSave = async () => {
     if (!releaseDate) {
       showNotification('error', 'Por favor, informe a data de liberação.');
@@ -104,9 +163,10 @@ export default function NewRequest() {
       return;
     }
 
-    const invalidSku = validItems.find(item => item.sku.length !== 10 && item.sku.length !== 11);
+    const invalidSku = validItems.find(item => item.sku.length > 15);
+    
     if (invalidSku) {
-        showNotification('error', `SKU inválido: ${invalidSku.sku}. O SKU deve ter 10 ou 11 dígitos.`);
+        showNotification('error', `SKU muito longo: ${invalidSku.sku}. O limite é 15 caracteres.`);
         return;
     }
 
@@ -190,7 +250,7 @@ export default function NewRequest() {
                     type="text" 
                     value={reason} 
                     onChange={(e) => setReason(e.target.value)} 
-                    placeholder="Insira o motivo da soliciação"
+                    placeholder="Ex: Reposição de estoque urgente..."
                     className="input-field"
                 />
             </div>
@@ -199,7 +259,7 @@ export default function NewRequest() {
                <div className="table-rows scrollable-area">
                 <div className="row-header">
                   <div className="col-num">#</div>
-                  <div className="col-sku">SKU (10 ou 11 Dígitos)</div>
+                  <div className="col-sku">SKU (Máx 15 Dígitos)</div>
                   <div className="col-qtd">QTD</div>
                   <div className="col-action"></div>
                 </div>
@@ -214,7 +274,7 @@ export default function NewRequest() {
                         value={item.sku}
                         onChange={(e) => handleItemChange(index, 'sku', e.target.value)}
                         placeholder="CÓDIGO SKU"
-                        maxLength={11}
+                        maxLength={15} 
                         className="input-field input-sm uppercase"
                       />
                     </div>
@@ -236,11 +296,23 @@ export default function NewRequest() {
                 ))}
               </div>
               
-              {/* ÁREA DE AÇÃO COMPACTA: ADICIONAR ITEM (ESQUERDA) + SALVAR (DIREITA) */}
               <div className="add-row-area">
-                <button onClick={handleAddItem} className="btn-add">
-                    <Plus size={18} /> Adicionar item
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={handleAddItem} className="btn-add">
+                        <Plus size={18} /> Adicionar item
+                    </button>
+                    
+                    <button onClick={handleImportClick} className="btn-add" style={{ color: '#16a34a', borderColor: '#16a34a' }}>
+                        <Upload size={18} /> Importar Planilha .csv
+                    </button>
+                    <input 
+                        type="file" 
+                        accept=".csv" 
+                        ref={fileInputRef} 
+                        style={{ display: 'none' }} 
+                        onChange={processCSV} 
+                    />
+                </div>
                 
                 <button onClick={handleSave} disabled={loading} className="btn btn-primary">
                     {loading ? <Loader2 className="spin" size={20} /> : <Save size={20} />}
@@ -254,10 +326,6 @@ export default function NewRequest() {
         </div>
       </main>
       {notification && <Toast type={notification.type} message={notification.message} />}
-
-          <Footer />
     </div>
-
-
   );
 }
