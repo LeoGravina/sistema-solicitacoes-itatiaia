@@ -135,21 +135,24 @@ input[type="password"]::-webkit-textfield-decoration-container {
    4. LISTA DE SOLICITAÇÕES (SCROLLÁVEL)
    ========================================= */
 .request-list { display: flex; flex-direction: column; gap: 0.6rem; flex: 1; overflow-y: auto; padding-right: 6px; in-height: 0; padding-bottom: 100px;}
-/* Scrollbar */
 .request-list::-webkit-scrollbar { width: 5px; }
 .request-list::-webkit-scrollbar-track { background: transparent; }
 .request-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .request-list::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
 .request-card { background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e5e7eb; border-left: 4px solid #233ae0; display: flex; justify-content: space-between; align-items: flex-start; transition: all 0.2s; cursor: pointer; flex-shrink: 0; }
 .request-card:hover { transform: translateX(2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 .request-card.completed { background-color: #f9fafb; border-left-color: #10b981; opacity: 0.7; }
 .request-card.completed .req-header-row strong { text-decoration: line-through; color: #6b7280; }
 .req-main-content { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.req-header-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.req-header-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;}
+.req-header-row strong { color: #1f2937; font-size: 1rem; }
 .req-header-row strong { color: #1f2937; font-size: 1rem; }
 .req-timestamp { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #6b7280; }
-.req-details-col { display: flex; flex-direction: column; gap: 4px; }
+.req-reason-inline {display: flex;align-items: center;gap: 6px;font-size: 0.85rem;color: #4b5563;margin-left: 0.5rem; }
+.req-reason-inline .separator { color: #d1d5db;font-weight: 300;}
+.req-reason-inline strong {color: #1f2937;font-weight: 700;font-size: 0.85rem; }
+.req-reason-inline .reason-text { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
+.req-details-col { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 .req-release { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #4b5563; }
 .icon-gray { color: #9ca3af; }
 .item-count { background: #eef2ff; color: #233ae0; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem !important; font-weight: 600; width: fit-content; }
@@ -161,9 +164,15 @@ input[type="password"]::-webkit-textfield-decoration-container {
 .btn-load-more { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.8rem; margin-top: 1rem; background: transparent; border: 1px dashed #d1d5db; color: #6b7280; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.2s; flex-shrink: 0; }
 .btn-load-more:hover { background-color: #f9fafb; color: #233ae0; border-color: #233ae0; }
 
-/* =========================================
-   5. COMPONENTES COMPACTOS
-   ========================================= */
+@media (max-width: 600px) {
+  .req-reason-inline {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  .req-reason-inline .separator { display: none; } 
+}
+/* 5. COMPONENTES COMPACTOS */
 .scroll-wrapper { flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 80px; }
 .scroll-wrapper::-webkit-scrollbar { width: 5px; }
 .scroll-wrapper::-webkit-scrollbar-track { background: transparent; }

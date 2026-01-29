@@ -87,11 +87,8 @@ export default function Dashboard() {
 
   const handleEdit = (id) => navigate(`/editar/${id}`);
   
-  // --- EXPORTAÇÃO FILTRADA ---
   const handleExportAll = (e) => { 
     e.stopPropagation(); 
-    
-    // Filtra: Pega tudo que NÃO está completado (Status !== 'completed')
     const pendingRequests = filteredRequests.filter(req => req.status !== 'completed');
     
     if (pendingRequests.length === 0) {
@@ -167,10 +164,22 @@ export default function Dashboard() {
           {filteredRequests.map((req) => (
             <div key={req.id} className={`request-card ${req.status === 'completed' ? 'completed' : ''}`} onClick={() => setSelectedRequest(req)}>
               <div className="req-main-content">
+                
+                {/* LINHA DE CABEÇALHO COM TUDO JUNTO: NOME | DATA | MOTIVO */}
                 <div className="req-header-row">
                    <strong>{req.requester}</strong>
                    <span className="req-timestamp"><CalendarClock size={14} /> {formatDate(req.createdAt)}</span>
+                   
+                   {/* SEPARAÇÃO E MOTIVO NA MESMA LINHA */}
+                   {req.reason && (
+                      <div className="req-reason-inline">
+                         <span className="separator">|</span>
+                         <strong>Motivo:</strong>
+                         <span className="reason-text">{req.reason}</span>
+                      </div>
+                   )}
                 </div>
+
                 <div className="req-details-col">
                    <div className="req-release">
                       <CalendarDays size={14} className="icon-gray" />
