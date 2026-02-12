@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NewRequest from './pages/NewRequest';
 import Contato from './pages/Contato'; 
+import PriceTable from './pages/PriceTable';
 
 // Componentes Globais
 import Footer from './components/Footer'; // <--- Importe o Footer
@@ -30,6 +31,7 @@ export default function App() {
 
           {/* Rotas Protegidas */}
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/tabela-precos" element={<PrivateRoute><PriceTable /></PrivateRoute>} />
           <Route path="/nova-solicitacao" element={<PrivateRoute><NewRequest /></PrivateRoute>} />
           <Route path="/editar/:id" element={<PrivateRoute><NewRequest /></PrivateRoute>} />
         </Routes>

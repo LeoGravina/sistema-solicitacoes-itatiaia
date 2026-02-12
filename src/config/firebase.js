@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = typeof __firebase_config !== 'undefined' 
   ? JSON.parse(__firebase_config) 
@@ -16,6 +17,7 @@ const firebaseConfig = typeof __firebase_config !== 'undefined'
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Exportamos o AppID para usar nas collections
 export const appId = typeof __app_id !== 'undefined' ? __app_id : 'itatiaia-controle-cota';
