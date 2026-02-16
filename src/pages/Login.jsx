@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react'; // Importe os ícones
-import logoImg from '../assets/logo-ita-removebg-preview.png';
+import logoImg from '../assets/logo-itatiaia.png';
 
 export default function Login() {
   const [username, setUsername] = useState('');
