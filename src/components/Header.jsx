@@ -52,7 +52,7 @@ export default function Header({ title = "Portal de Sistemas" }) {
                     <Home size={20} /> Início (Portal)
                 </div>
                 
-                <div onClick={() => { navigate('/tabela'); setIsMenuOpen(false); }} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: location.pathname === '/tabela' ? '#eff6ff' : 'transparent', color: location.pathname === '/tabela' ? '#2563eb' : '#334155', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = location.pathname === '/tabela' ? '#eff6ff' : 'transparent'}>
+                <div onClick={() => { navigate('/tabela-precos'); setIsMenuOpen(false); }} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: location.pathname === '/tabela' ? '#eff6ff' : 'transparent', color: location.pathname === '/tabela' ? '#2563eb' : '#334155', fontWeight: 600, transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = location.pathname === '/tabela' ? '#eff6ff' : 'transparent'}>
                     <Calculator size={20} /> Catálogo Comercial
                 </div>
 
