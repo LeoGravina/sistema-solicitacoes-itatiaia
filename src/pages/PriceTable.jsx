@@ -34,6 +34,8 @@ const saveToRecent = (product) => {
     } catch (e) { console.error("Erro ao salvar histórico", e); }
 };
 
+const ROW_HEIGHTS = { header: '120px', price: '60px', line: '40px', dim: '35px', weight: '35px', vol: '35px', action: '60px' };
+
 export default function PriceTable() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -323,16 +325,22 @@ export default function PriceTable() {
 
   return (
     <div style={{height:'100vh', display:'flex', flexDirection:'column', backgroundColor:'#f8fafc', fontFamily:"'Inter', sans-serif", overflow:'hidden'}}>
-    <Header title="Catálogo Comercial" /> 
+    
+    {/* HEADER BLINDADO - FLEX SHRINK 0 IMPEDE QUE ELE DIMINUA */}
+    <div style={{flexShrink: 0}}>
+        <Header title="Catálogo Comercial" /> 
+    </div>
 
     <div style={{maxWidth:'1600px', margin:'0 auto', padding:'1rem 1.5rem', width:'100%', display:'flex', flexDirection:'column', flex:1, overflow:'hidden', position:'relative'}}>
         
+        {/* BREADCRUMBS */}
         <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.75rem', fontWeight:600, marginBottom:'0.75rem', flexShrink: 0}}>
             <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
             <ChevronRight size={12} />
             <span style={{color:'#0f172a'}}>Catálogo e Cotação Rápidas</span>
         </div>
 
+        {/* SIMULADOR */}
         <div style={{flexShrink: 0, background:'#fff', borderRadius:'12px', padding:'1rem 1.5rem', border:'1px solid #e2e8f0', marginBottom:'0.75rem', boxShadow:'0 2px 10px rgba(0,0,0,0.02)'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: showFilters ? '0.75rem' : '0'}}>
                 <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#1e40af'}}><Settings2 size={16} /> <h3 style={{margin:0, fontSize:'0.9rem', fontWeight:700}}>Simulador Rápido</h3></div>
@@ -350,6 +358,7 @@ export default function PriceTable() {
             )}
         </div>
 
+        {/* CONTROLES */}
         <div style={{flexShrink: 0, display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'0.75rem', flexWrap:'wrap', gap:'10px'}}>
             <div style={{display:'flex', gap:'6px', overflowX:'auto', paddingBottom:'2px'}}>
                 {fixedTabs.map(tab => (
@@ -450,8 +459,8 @@ export default function PriceTable() {
                                 )}
                                 {visibleCols.img && (
                                     <td style={{ padding:'6px', textAlign: 'center' }}>
-                                        <div style={{position: 'relative', width: 32, height: 32, margin: '0 auto', background:'#f1f5f9', borderRadius:'6px', display:'flex', alignItems:'center', justifyContent:'center'}}>
-                                            {product.imageUrl ? ( <img src={product.imageUrl} alt="" style={{maxWidth:'100%', maxHeight:'100%', objectFit:'contain', borderRadius:'6px'}} onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }} /> ) : null}
+                                        <div style={{position: 'relative', width: 32, height: 32, margin: '0 auto', background:'#fff', borderRadius:'4px', border:'1px solid #f1f5f9', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                                            {product.imageUrl ? ( <img src={product.imageUrl} alt="" style={{maxWidth:'100%', maxHeight:'100%', objectFit:'contain', borderRadius:'4px'}} onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'block'; }} /> ) : null}
                                             <ImageIcon size={14} color="#cbd5e1" style={{display: product.imageUrl ? 'none' : 'block'}} />
                                         </div>
                                     </td>
@@ -480,7 +489,6 @@ export default function PriceTable() {
             )}
         </div>
 
-        {/* BARRA FLUTUANTE DO COMPARADOR */}
         {compareList.length > 0 && !showCompareModal && (
             <div style={{position:'fixed', bottom: '30px', left: '50%', transform:'translateX(-50%)', background:'#0f172a', color:'#fff', padding:'12px 24px', borderRadius:'30px', display:'flex', alignItems:'center', gap:'20px', zIndex:900, boxShadow:'0 10px 25px rgba(0,0,0,0.2)', animation:'fadeInDown 0.3s ease-out'}}>
                 <div style={{display:'flex', alignItems:'center', gap:'8px', fontWeight:600}}>
@@ -494,63 +502,55 @@ export default function PriceTable() {
         )}
 
         {/* ========================================================= */}
-        {/* MODAL DE COMPARAÇÃO "FIT SCREEN" (Compacto e Sem Scroll!) */}
+        {/* MODAL DE COMPARAÇÃO ALINHADO PERFEITAMENTE */}
         {/* ========================================================= */}
         {showCompareModal && (
             <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'#f8fafc', zIndex:9999, display:'flex', flexDirection:'column', animation:'fadeIn 0.2s'}}>
-                
-                {/* Header do Comparador */}
                 <div style={{background:'#fff', padding:'15px 30px', borderBottom:'1px solid #e2e8f0', display:'flex', justifyContent:'space-between', alignItems:'center', boxShadow:'0 2px 5px rgba(0,0,0,0.02)', flexShrink:0}}>
-                    <div style={{display:'flex', alignItems:'center', gap:'10px', color:'#0f172a'}}>
-                        <Scale size={20} color="#2563eb"/> <h2 style={{margin:0, fontSize:'1.2rem'}}>Comparador Lado a Lado</h2>
-                    </div>
+                    <div style={{display:'flex', alignItems:'center', gap:'10px', color:'#0f172a'}}><Scale size={20} color="#2563eb"/> <h2 style={{margin:0, fontSize:'1.2rem'}}>Comparador Lado a Lado</h2></div>
                     <button onClick={() => setShowCompareModal(false)} style={{display:'flex', alignItems:'center', gap:'6px', background:'#f1f5f9', border:'none', padding:'6px 14px', borderRadius:'8px', color:'#475569', fontWeight:600, cursor:'pointer', fontSize:'0.85rem'}}><X size={16}/> Fechar</button>
                 </div>
 
-                {/* Área de Comparação (Ajustada para caber na tela) */}
-                <div style={{flex:1, display:'flex', padding:'20px 30px', overflowX:'auto', overflowY:'hidden', alignItems:'center'}}>
+                <div style={{flex:1, display:'flex', padding:'20px 30px', overflowX:'auto', overflowY:'hidden', alignItems:'flex-start'}}>
                     <div style={{display:'flex', gap:'16px', minWidth:'max-content'}}>
                         
-                        {/* Coluna de Títulos (As "Etiquetas" das Linhas) */}
-                        <div style={{width:'140px', flexShrink:0, display:'flex', flexDirection:'column', paddingTop:'160px'}}>
-                            <div style={{height:'45px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Preço Simulado</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Linha</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Comprimento</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Largura</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Altura</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Peso Bruto</div>
-                            <div style={{height:'35px', display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Volume (m³)</div>
+                        {/* COLUNA DE TÍTULOS (RÉGUA) */}
+                        <div style={{width:'140px', flexShrink:0, display:'flex', flexDirection:'column', paddingTop: ROW_HEIGHTS.header}}>
+                            <div style={{height: ROW_HEIGHTS.price, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Preço Simulado</div>
+                            <div style={{height: ROW_HEIGHTS.line, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Linha</div>
+                            <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Comprimento</div>
+                            <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Largura</div>
+                            <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Altura</div>
+                            <div style={{height: ROW_HEIGHTS.weight, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Peso Bruto</div>
+                            <div style={{height: ROW_HEIGHTS.vol, display:'flex', alignItems:'center', fontWeight:700, color:'#64748b', fontSize:'0.8rem'}}>Volume (m³)</div>
                         </div>
 
-                        {/* Colunas dos Produtos */}
                         {compareList.map(prod => (
                             <div key={prod.id} style={{width:'280px', flexShrink:0, background:'#fff', border:'1px solid #e2e8f0', borderRadius:'12px', padding:'15px', boxShadow:'0 4px 15px rgba(0,0,0,0.03)', display:'flex', flexDirection:'column', position:'relative'}}>
-                                <button onClick={() => setCompareList(prev => prev.filter(p => p.id !== prod.id))} style={{position:'absolute', top:10, right:10, background:'#fef2f2', border:'none', color:'#ef4444', width:'22px', height:'22px', borderRadius:'50%', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}><X size={12}/></button>
+                                <button onClick={() => setCompareList(prev => prev.filter(p => p.id !== prod.id))} style={{position:'absolute', top:10, right:10, background:'#fef2f2', border:'none', color:'#ef4444', width:'22px', height:'22px', borderRadius:'50%', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:10}}><X size={12}/></button>
                                 
-                                <div style={{height:'100px', display:'flex', justifyContent:'center', alignItems:'center', marginBottom:'10px'}}>
-                                    {prod.imageUrl ? <img src={prod.imageUrl} style={{maxHeight:'100%', maxWidth:'100%', objectFit:'contain'}} /> : <ImageIcon size={30} color="#cbd5e1" />}
-                                </div>
-                                <div style={{height:'50px', marginBottom:'10px'}}>
+                                <div style={{height: ROW_HEIGHTS.header, display:'flex', flexDirection:'column'}}>
+                                    <div style={{height:'70px', display:'flex', justifyContent:'center', alignItems:'center', marginBottom:'10px', background:'#fff'}}>
+                                        {prod.imageUrl ? <img src={prod.imageUrl} style={{maxHeight:'100%', maxWidth:'100%', objectFit:'contain'}} /> : <ImageIcon size={30} color="#cbd5e1" />}
+                                    </div>
                                     <span style={{fontSize:'0.7rem', color:'#64748b', fontWeight:700, display:'block'}}>{prod.sku}</span>
-                                    <h4 style={{margin:'2px 0 0 0', fontSize:'0.85rem', color:'#0f172a', lineHeight:'1.2', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden'}}>{prod.description}</h4>
+                                    <h4 style={{margin:'2px 0 0 0', fontSize:'0.85rem', color:'#0f172a', lineHeight:'1.2', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{prod.description}</h4>
                                 </div>
 
-                                {/* Linhas de Dados */}
-                                <div style={{height:'45px', display:'flex', alignItems:'center', fontSize:'1.5rem', fontWeight:800, color:'#10b981', borderTop:'1px solid #f1f5f9'}}>{calculateFinalPrice(prod).toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.brand}</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.length || 0} mm</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.width || 0} mm</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.height || 0} mm</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.weightBruto || 0} kg</div>
-                                <div style={{height:'35px', display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9', marginBottom:'10px'}}>{prod.dimensions?.volume || 0} m³</div>
+                                <div style={{height: ROW_HEIGHTS.price, display:'flex', alignItems:'center', fontSize:'1.5rem', fontWeight:800, color:'#10b981', borderTop:'1px solid #f1f5f9'}}>{calculateFinalPrice(prod).toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</div>
+                                <div style={{height: ROW_HEIGHTS.line, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.brand}</div>
+                                <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.length || 0} mm</div>
+                                <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.width || 0} mm</div>
+                                <div style={{height: ROW_HEIGHTS.dim, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.height || 0} mm</div>
+                                <div style={{height: ROW_HEIGHTS.weight, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9'}}>{prod.dimensions?.weightBruto || 0} kg</div>
+                                <div style={{height: ROW_HEIGHTS.vol, display:'flex', alignItems:'center', fontSize:'0.85rem', color:'#334155', borderTop:'1px solid #f1f5f9', marginBottom:'10px'}}>{prod.dimensions?.volume || 0} m³</div>
                                 
-                                <button onClick={() => {setShowCompareModal(false); navigate(`/produto-analise`, {state:{sku: prod.sku}});}} style={{marginTop:'auto', background:'#f8fafc', border:'1px solid #cbd5e1', padding:'8px', borderRadius:'8px', fontWeight:600, fontSize:'0.8rem', color:'#475569', cursor:'pointer'}}>Ver Análise Completa</button>
+                                <button onClick={() => {setShowCompareModal(false); navigate(`/produto-analise`, {state:{sku: prod.sku}});}} style={{marginTop:'auto', height: ROW_HEIGHTS.action, background:'#f8fafc', border:'1px solid #cbd5e1', padding:'0', borderRadius:'8px', fontWeight:600, fontSize:'0.8rem', color:'#475569', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center'}}>Ver Análise Completa</button>
                             </div>
                         ))}
                         
-                        {/* Box para Adicionar Mais */}
                         {compareList.length < 4 && (
-                            <div onClick={() => setShowCompareModal(false)} style={{width:'280px', flexShrink:0, border:'2px dashed #cbd5e1', borderRadius:'12px', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', color:'#94a3b8', cursor:'pointer', background:'transparent', transition:'all 0.2s'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='#2563eb'; e.currentTarget.style.color='#2563eb'; e.currentTarget.style.background='#eff6ff';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#cbd5e1'; e.currentTarget.style.color='#94a3b8'; e.currentTarget.style.background='transparent';}}>
+                            <div onClick={() => setShowCompareModal(false)} style={{width:'280px', height:'450px', flexShrink:0, border:'2px dashed #cbd5e1', borderRadius:'12px', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', color:'#94a3b8', cursor:'pointer', background:'transparent', transition:'all 0.2s'}} onMouseEnter={e=>{e.currentTarget.style.borderColor='#2563eb'; e.currentTarget.style.color='#2563eb'; e.currentTarget.style.background='#eff6ff';}} onMouseLeave={e=>{e.currentTarget.style.borderColor='#cbd5e1'; e.currentTarget.style.color='#94a3b8'; e.currentTarget.style.background='transparent';}}>
                                 <Search size={30} style={{marginBottom:'10px'}}/>
                                 <span style={{fontWeight:600, fontSize:'0.85rem'}}>Adicionar produto</span>
                             </div>
@@ -560,22 +560,22 @@ export default function PriceTable() {
             </div>
         )}
 
-        {/* GAVETA EXPRESSA */}
+        {/* GAVETA ARRUMADA */}
         {selectedProduct && (
             <>
-                <div onClick={() => setSelectedProduct(null)} style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(15, 23, 42, 0.4)', backdropFilter:'blur(3px)', zIndex:998, animation:'fadeIn 0.2s'}} />
+                <div onClick={() => setSelectedProduct(null)} style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(15, 23, 42, 0.4)', backdropFilter:'blur(3px)', zIndex:9998}} />
                 
-                <div style={{position:'fixed', top:0, right:0, bottom:0, width:'100%', maxWidth:'400px', background:'#fff', zIndex:999, overflowY:'auto', boxShadow:'-10px 0 30px rgba(0,0,0,0.1)', animation:'slideInRight 0.2s ease-out'}}>
-                    <div style={{background:'#f8fafc', padding:'20px', display:'flex', justifyContent:'center', position:'relative', borderBottom:'1px solid #e2e8f0', minHeight:'200px'}}>
-                        <button onClick={() => setSelectedProduct(null)} style={{position:'absolute', top:15, right:15, background:'#fff', border:'1px solid #e2e8f0', width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#475569', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><X size={18} /></button>
+                <div style={{position:'fixed', top:0, right:0, bottom:0, width:'100%', maxWidth:'400px', background:'#fff', zIndex:9999, overflowY:'auto', boxShadow:'-10px 0 30px rgba(0,0,0,0.1)', animation:'slideInRight 0.2s ease-out', display:'flex', flexDirection:'column'}}>
+                    <div style={{background:'#fff', padding:'20px', display:'flex', justifyContent:'center', position:'relative', borderBottom:'1px solid #e2e8f0', minHeight:'220px', alignItems:'center', flexShrink: 0}}>
+                        <button onClick={() => setSelectedProduct(null)} style={{position:'absolute', top:15, right:15, background:'#fff', border:'1px solid #e2e8f0', width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'#475569', boxShadow:'0 2px 5px rgba(0,0,0,0.05)', zIndex:10}}><X size={18} /></button>
                         
                         {selectedProduct.imageUrl ? (
-                            <img src={selectedProduct.imageUrl} alt="" style={{maxWidth:'100%', maxHeight:'200px', objectFit:'contain'}} onError={(e) => { e.target.style.display = 'none'; }} />
+                            <img src={selectedProduct.imageUrl} alt="" style={{maxWidth:'90%', maxHeight:'180px', objectFit:'contain'}} onError={(e) => { e.target.style.display = 'none'; }} />
                         ) : (
                             <div style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', color:'#cbd5e1'}}><ImageIcon size={40} /><p style={{fontSize:'0.85rem'}}>Sem imagem</p></div>
                         )}
                     </div>
-                    <div style={{padding:'20px', display:'flex', flexDirection:'column', gap:'1.2rem'}}>
+                    <div style={{padding:'24px', display:'flex', flexDirection:'column', gap:'1.2rem', flex:1}}>
                         <div>
                             <span style={{color:'#2563eb', fontSize:'0.7rem', fontWeight:700, textTransform:'uppercase'}}>{selectedProduct.brand}</span>
                             <h2 style={{margin:'4px 0 6px 0', fontSize:'1.2rem', color:'#0f172a', lineHeight:'1.3'}}>{selectedProduct.description}</h2>
@@ -590,7 +590,7 @@ export default function PriceTable() {
                         </div>
                         <button 
                             onClick={() => navigate(`/produto-analise`, { state: { sku: selectedProduct.sku, expedicao, uf, freteType, tipoCarga, clientTier, paymentTerm, logisticsMap } })}
-                            style={{width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'#2563eb', color:'#fff', border:'none', padding:'12px', borderRadius:'8px', fontWeight:700, fontSize:'0.9rem', cursor:'pointer', transition:'0.2s', boxShadow:'0 4px 10px rgba(37,99,235,0.2)'}}
+                            style={{width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'#2563eb', color:'#fff', border:'none', padding:'12px', borderRadius:'8px', fontWeight:700, fontSize:'0.9rem', cursor:'pointer', transition:'0.2s', boxShadow:'0 4px 10px rgba(37,99,235,0.2)', marginTop:'auto'}}
                             onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'} onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}
                         >
                             Ver Análise e Fotos <ExternalLink size={16}/>
