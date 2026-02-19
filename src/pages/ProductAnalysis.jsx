@@ -148,24 +148,21 @@ export default function ProductAnalysis() {
     const finalPrice = calculateFinalPrice();
 
     return (
-        // ESTRUTURA BLINDADA: Header Fixo + Conteúdo Rolável
         <div style={{height:'100vh', display:'flex', flexDirection:'column', backgroundColor:'#ffffff', fontFamily:"'Inter', sans-serif"}}>
             
-            {/* Header com flexShrink: 0 para não diminuir NUNCA */}
             <div style={{flexShrink: 0}}>
                 <Header title="Análise de Produto" />
             </div>
 
-            {/* Conteúdo com overflowY: auto para rolar independente do Header */}
             <div style={{flex: 1, overflowY: 'auto', padding:'2rem'}}>
                 <div style={{maxWidth:'1400px', margin:'0 auto', width:'100%'}}>
                     
-                    <div style={{display:'flex', alignItems:'center', gap:'8px', color:'#64748b', fontSize:'0.85rem', fontWeight:600, marginBottom:'2rem'}}>
-                        <Home size={14} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
-                        <ChevronRight size={14} />
-                        <span style={{cursor:'pointer', transition:'color 0.2s'}} onClick={() => navigate('/tabela-precos')} onMouseEnter={e=>e.currentTarget.style.color='#0f172a'} onMouseLeave={e=>e.currentTarget.style.color='#64748b'}>Catálogo Comercial</span>
-                        <ChevronRight size={14} />
-                        <span style={{color:'#0f172a'}}>Análise Detalhada</span>
+                    <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem'}}>
+                        <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
+                        <ChevronRight size={12} />
+                        <span style={{cursor:'pointer', transition:'color 0.2s'}} onClick={() => navigate('/tabela-precos')} onMouseEnter={e=>e.currentTarget.style.color='#0f172a'} onMouseLeave={e=>e.currentTarget.style.color='#64748b'}>Tabela de Preços</span>
+                        <ChevronRight size={12} />
+                        <span style={{color:'#0f172a'}}>Análise de Produtos</span>
                         {product && <><ChevronRight size={14} /><span style={{color:'#2563eb'}}>{product.sku}</span></>}
                     </div>
 

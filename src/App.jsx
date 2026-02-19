@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/CotasDashboard';
 import NewRequest from './pages/NewRequest';
 import Contato from './pages/Contato'; 
 import PriceTable from './pages/PriceTable';
@@ -31,7 +31,6 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/contato" element={<Contato />} />
 
-          {/* Rotas Protegidas */}
           <Route path="/" element={<Home />} />
           <Route path="/cotas" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/editar/:id" element={<PrivateRoute><NewRequest /></PrivateRoute>} />

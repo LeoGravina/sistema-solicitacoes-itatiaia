@@ -328,19 +328,17 @@ export default function PriceTable() {
     
     {/* HEADER BLINDADO - FLEX SHRINK 0 IMPEDE QUE ELE DIMINUA */}
     <div style={{flexShrink: 0}}>
-        <Header title="Catálogo Comercial" /> 
+        <Header title="Tabela de Preços" /> 
     </div>
 
     <div style={{maxWidth:'1600px', margin:'0 auto', padding:'1rem 1.5rem', width:'100%', display:'flex', flexDirection:'column', flex:1, overflow:'hidden', position:'relative'}}>
         
-        {/* BREADCRUMBS */}
-        <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.75rem', fontWeight:600, marginBottom:'0.75rem', flexShrink: 0}}>
+        <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem', flexShrink: 0}}>
             <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
             <ChevronRight size={12} />
-            <span style={{color:'#0f172a'}}>Catálogo e Cotação Rápidas</span>
+            <span style={{color:'#0f172a'}}>Tabela de Preços</span>
         </div>
 
-        {/* SIMULADOR */}
         <div style={{flexShrink: 0, background:'#fff', borderRadius:'12px', padding:'1rem 1.5rem', border:'1px solid #e2e8f0', marginBottom:'0.75rem', boxShadow:'0 2px 10px rgba(0,0,0,0.02)'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: showFilters ? '0.75rem' : '0'}}>
                 <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#1e40af'}}><Settings2 size={16} /> <h3 style={{margin:0, fontSize:'0.9rem', fontWeight:700}}>Simulador Rápido</h3></div>

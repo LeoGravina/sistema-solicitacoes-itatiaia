@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, limit } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, limit, startAfter, getDocs } from 'firebase/firestore';
 import { db, appId } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { generateAndDownloadCSV } from '../utils/exportHelpers';
@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import { 
   FileSpreadsheet, CheckSquare, Square, Plus, LayoutGrid, CheckCircle2, 
   AlertCircle, CalendarClock, CalendarDays, X, Download, Trash2, Search, 
-  Pencil, ChevronDown, AlertTriangle, HelpCircle, FileText 
+  Pencil, ChevronDown, AlertTriangle, HelpCircle, FileText, ChevronRight, Home, Loader2
 } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
@@ -25,28 +25,73 @@ export default function Dashboard() {
   const [deleteConfirmationId, setDeleteConfirmationId] = useState(null); 
   const [statusConfirmation, setStatusConfirmation] = useState(null); 
 
-  const [itemsLimit, setItemsLimit] = useState(ITEMS_PER_PAGE);
+  // PAGINAÇÃO HÍBRIDA: Cursores e Loaders
+  const [lastDoc, setLastDoc] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const { userData, currentUser } = useAuth();
   const navigate = useNavigate();
   const isAdmin = userData?.role === 'admin';
 
+  // 1. TEMPO REAL APENAS NA PRIMEIRA PÁGINA (Alta performance)
   useEffect(() => {
     const q = query(
       collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME),
       orderBy('createdAt', 'desc'),
-      limit(itemsLimit)
+      limit(ITEMS_PER_PAGE)
     );
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setRequests(data);
-      setHasMore(data.length >= itemsLimit);
+      
+      if (snapshot.docs.length > 0) {
+          // Salva o último documento apenas se for o carregamento inicial (sem páginas extras)
+          setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+
+      setRequests(prev => {
+          // Mescla os itens em tempo real com os itens antigos já carregados pelo "Load More"
+          const olderItems = prev.slice(ITEMS_PER_PAGE);
+          const newIds = new Set(data.map(d => d.id));
+          const filteredOlder = olderItems.filter(item => !newIds.has(item.id));
+          return [...data, ...filteredOlder];
+      });
+      
+      setHasMore(snapshot.docs.length >= ITEMS_PER_PAGE);
     });
     return () => unsubscribe();
-  }, [itemsLimit]);
+  }, []);
 
-  const loadMore = () => setItemsLimit(prev => prev + 10);
+  // 2. BUSCA POR CURSOR (Sem recarregar tudo de novo)
+  const loadMore = async () => {
+      if (!lastDoc) return;
+      setLoadingMore(true);
+      try {
+          const q = query(
+              collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME),
+              orderBy('createdAt', 'desc'),
+              startAfter(lastDoc),
+              limit(ITEMS_PER_PAGE)
+          );
+          const snapshot = await getDocs(q);
+          const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          
+          if (snapshot.docs.length > 0) {
+              setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+              setRequests(prev => {
+                  const existingIds = new Set(prev.map(p => p.id));
+                  const uniqueNew = data.filter(d => !existingIds.has(d.id));
+                  return [...prev, ...uniqueNew];
+              });
+          }
+          setHasMore(snapshot.docs.length === ITEMS_PER_PAGE);
+      } catch (error) {
+          console.error("Erro ao carregar mais itens:", error);
+      } finally {
+          setLoadingMore(false);
+      }
+  };
 
   const handleStatusClick = (e, id, currentStatus) => {
     e.stopPropagation(); 
@@ -64,6 +109,11 @@ export default function Dashboard() {
       const docRef = doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, id);
       await updateDoc(docRef, { status: newStatus });
       await logAction(userData, 'UPDATE_STATUS', id, `Status alterado para ${newStatus}`);
+      
+      // Atualiza localmente para garantir resposta imediata mesmo fora da 1ª página
+      setRequests(prev => prev.map(req => req.id === id ? { ...req, status: newStatus } : req));
+      if (selectedRequest?.id === id) setSelectedRequest(prev => ({ ...prev, status: newStatus }));
+
     } catch (error) {
       console.error("Erro ao mudar status", error);
     } finally {
@@ -78,6 +128,9 @@ export default function Dashboard() {
     try {
       await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME, deleteConfirmationId));
       await logAction(userData || { uid: currentUser.uid }, 'DELETE', deleteConfirmationId, 'Excluído via Dashboard');
+      
+      // Atualiza localmente
+      setRequests(prev => prev.filter(req => req.id !== deleteConfirmationId));
       setDeleteConfirmationId(null);
       if (selectedRequest?.id === deleteConfirmationId) setSelectedRequest(null);
     } catch (error) {
@@ -131,8 +184,16 @@ export default function Dashboard() {
 
   return (
     <div className="app-container">
-      <Header />
+      <div style={{flexShrink: 0}}>
+        <Header title="Liberação de Cotas" />
+      </div>
+
       <main className="main-content">
+        <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem', flexShrink: 0}}>
+            <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
+            <ChevronRight size={12} />
+            <span style={{color:'#0f172a'}}>Liberação de Cotas</span>
+        </div>  
         
         <div className="kpi-grid">
            <div className={`kpi-card blue ${filter === 'all' ? 'active' : ''}`} onClick={() => handleKpiClick('all')}>
@@ -162,15 +223,23 @@ export default function Dashboard() {
 
         <div className="request-list">
           {filteredRequests.map((req) => (
-            <div key={req.id} className={`request-card ${req.status === 'completed' ? 'completed' : ''}`} onClick={() => setSelectedRequest(req)}>
+            <div 
+                key={req.id} 
+                className={`request-card ${req.status === 'completed' ? 'completed' : ''}`} 
+                onClick={() => setSelectedRequest(req)}
+                // FEEDBACK VISUAL: Opacidade reduzida e fundo cinza para finalizados
+                style={{ 
+                    opacity: req.status === 'completed' ? 0.65 : 1, 
+                    backgroundColor: req.status === 'completed' ? '#f8fafc' : '#fff',
+                    transition: 'all 0.2s ease-in-out'
+                }}
+            >
               <div className="req-main-content">
                 
-                {/* LINHA DE CABEÇALHO COM TUDO JUNTO: NOME | DATA | MOTIVO */}
                 <div className="req-header-row">
-                   <strong>{req.requester}</strong>
+                   <strong style={{ color: req.status === 'completed' ? '#64748b' : '#0f172a' }}>{req.requester}</strong>
                    <span className="req-timestamp"><CalendarClock size={14} /> {formatDate(req.createdAt)}</span>
                    
-                   {/* SEPARAÇÃO E MOTIVO NA MESMA LINHA */}
                    {req.reason && (
                       <div className="req-reason-inline">
                          <span className="separator">|</span>
@@ -192,16 +261,22 @@ export default function Dashboard() {
               <div className="req-status" onClick={(e) => e.stopPropagation()}>
                 {isAdmin ? (
                   <button className="btn-check" onClick={(e) => handleStatusClick(e, req.id, req.status)} title="Alterar Status">
-                    {req.status === 'completed' ? <CheckSquare size={32} color="#16a34a" /> : <Square size={32} color="#d1d5db" />}
+                    {req.status === 'completed' ? <CheckSquare size={32} color="#16a34a" /> : <Square size={32} color="#cbd5e1" />}
                   </button>
                 ) : (
-                  <div title="Status">{req.status === 'completed' ? <CheckSquare size={32} color="#16a34a" /> : <Square size={32} color="#d1d5db" />}</div>
+                  <div title="Status">{req.status === 'completed' ? <CheckSquare size={32} color="#16a34a" /> : <Square size={32} color="#cbd5e1" />}</div>
                 )}
               </div>
             </div>
           ))}
           {filteredRequests.length === 0 && <div className="empty-state"><p>Nenhuma solicitação encontrada.</p></div>}
-          {hasMore && filteredRequests.length > 0 && <button onClick={loadMore} className="btn-load-more"><ChevronDown size={16} /> Carregar mais</button>}
+          
+          {/* BOTÃO CARREGAR MAIS OTIMIZADO */}
+          {hasMore && filteredRequests.length > 0 && (
+              <button onClick={loadMore} disabled={loadingMore} className="btn-load-more" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', width: '100%', padding: '12px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', color: '#2563eb', fontWeight: '600', cursor: 'pointer' }}>
+                {loadingMore ? <Loader2 size={18} className="spin" /> : <><ChevronDown size={18} /> Carregar mais registros</>}
+              </button>
+          )}
         </div>
       </main>
 

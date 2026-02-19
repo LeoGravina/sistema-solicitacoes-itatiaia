@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, appId } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText, Upload } from 'lucide-react'; 
+import { Plus, Trash2, Save, User, Calendar, ArrowLeft, Loader2, FileText, Upload, ChevronRight, Home } from 'lucide-react'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Toast from '../components/Toast';
@@ -25,7 +25,6 @@ export default function NewRequest() {
   const [initialLoading, setInitialLoading] = useState(isEditing);
   const [notification, setNotification] = useState(null);
   
-  // Referência para o input de arquivo oculto
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -89,7 +88,6 @@ export default function NewRequest() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  // --- FUNÇÃO DE IMPORTAR CSV ---
   const handleImportClick = () => {
     fileInputRef.current.click();
   };
@@ -104,15 +102,10 @@ export default function NewRequest() {
         const lines = text.split('\n');
         const newItems = [];
 
-        // Começa do 1 para pular cabeçalho (se houver) ou faz lógica de detecção
-        // Aqui assumimos que a primeira linha é cabeçalho se tiver texto 'SKU'
-        
         lines.forEach((line, index) => {
-            // Remove espaços e quebras de linha
             const cleanLine = line.trim();
             if (!cleanLine) return;
 
-            // Tenta separar por ponto e vírgula (Excel PT-BR) ou vírgula (Padrão)
             let parts = cleanLine.split(';');
             if (parts.length < 2) parts = cleanLine.split(',');
 
@@ -200,7 +193,7 @@ export default function NewRequest() {
         showNotification('success', 'Solicitação criada com sucesso!');
       }
       
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => navigate('/cotas'), 1500);
       
     } catch (error) {
       console.error(error);
@@ -220,13 +213,23 @@ export default function NewRequest() {
 
   return (
     <div className="app-container">
-      <Header />
+      <div style={{flexShrink: 0}}>
+        <Header title="Solicitação de Cota" />
+      </div>
+
       <main className="main-content">
+      <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem'}}>
+        <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
+        <ChevronRight size={12} />
+        <span style={{cursor:'pointer', transition:'color 0.2s'}} onClick={() => navigate('/cotas')} onMouseEnter={e=>e.currentTarget.style.color='#0f172a'} onMouseLeave={e=>e.currentTarget.style.color='#64748b'}>Liberação de Cotas</span>
+        <ChevronRight size={12} />
+        <span style={{color:'#0f172a'}}>Solicitação de Cotas</span>
+      </div>
       <div className="scroll-wrapper">
         <div className="card">
           <div className="card-header-simple">
             <div style={{display:'flex', alignItems:'center', gap: '10px'}}>
-              <button onClick={() => navigate('/')} className="btn-icon-white"><ArrowLeft /></button>
+              <button onClick={() => navigate('/cotas')} className="btn-icon-white"><ArrowLeft /></button>
               <h2>{isEditing ? 'Editar Solicitação' : 'Nova Solicitação'}</h2>
             </div>
           </div>
