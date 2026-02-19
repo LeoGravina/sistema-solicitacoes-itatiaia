@@ -37,7 +37,8 @@ export default function Home() {
                             {recentItems.map((item, index) => (
                                 <div key={index} onClick={() => navigate(`/produto-analise`, { state: { sku: item.sku } })} style={{display:'flex', alignItems:'center', gap:'10px', background:'#fff', padding:'8px 16px 8px 8px', borderRadius:'30px', border:'1px solid #e2e8f0', cursor:'pointer', transition:'all 0.2s', boxShadow:'0 2px 5px rgba(0,0,0,0.02)'}} onMouseEnter={e => {e.currentTarget.style.borderColor='#2563eb'; e.currentTarget.style.transform='translateY(-2px)'}} onMouseLeave={e => {e.currentTarget.style.borderColor='#e2e8f0'; e.currentTarget.style.transform='translateY(0)'}} title={item.description}>
                                     <div style={{width:'32px', height:'32px', background:'#f8fafc', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden'}}>
-                                        {item.imageUrl ? <img src={item.imageUrl} style={{width:'100%', height:'100%', objectFit:'cover'}} alt="" /> : <ImageIcon size={14} color="#cbd5e1" />}
+                                        {/* LAZY LOADING ADICIONADO AQUI */}
+                                        {item.imageUrl ? <img src={item.imageUrl} loading="lazy" decoding="async" style={{width:'100%', height:'100%', objectFit:'cover'}} alt="" /> : <ImageIcon size={14} color="#cbd5e1" />}
                                     </div>
                                     <div style={{display:'flex', flexDirection:'column'}}><span style={{fontSize:'0.75rem', fontWeight:700, color:'#0f172a', lineHeight:1}}>{item.sku}</span><span style={{fontSize:'0.7rem', color:'#64748b', maxWidth:'120px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', marginTop:'2px'}}>{item.description}</span></div>
                                 </div>

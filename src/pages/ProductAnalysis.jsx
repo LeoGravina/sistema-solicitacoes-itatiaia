@@ -149,15 +149,11 @@ export default function ProductAnalysis() {
 
     return (
         <div style={{height:'100vh', display:'flex', flexDirection:'column', backgroundColor:'#ffffff', fontFamily:"'Inter', sans-serif"}}>
-            
-            <div style={{flexShrink: 0}}>
-                <Header title="Análise de Produto" />
-            </div>
-
+            <div style={{flexShrink: 0}}><Header title="Análise de Produto" /></div>
             <div style={{flex: 1, overflowY: 'auto', padding:'2rem'}}>
                 <div style={{maxWidth:'1400px', margin:'0 auto', width:'100%'}}>
                     
-                    <div style={{display:'flex', alignItems:'center', gap:'6px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem'}}>
+                    <div style={{display:'flex', alignItems:'center', gap:'8px', color:'#64748b', fontSize:'0.80rem', fontWeight:600, marginBottom:'0.75rem'}}>
                         <Home size={12} style={{cursor:'pointer'}} onClick={() => navigate('/')} />
                         <ChevronRight size={12} />
                         <span style={{cursor:'pointer', transition:'color 0.2s'}} onClick={() => navigate('/tabela-precos')} onMouseEnter={e=>e.currentTarget.style.color='#0f172a'} onMouseLeave={e=>e.currentTarget.style.color='#64748b'}>Tabela de Preços</span>
@@ -188,10 +184,10 @@ export default function ProductAnalysis() {
 
                     {product && !loading && (
                         <div style={{display:'flex', gap:'4rem', alignItems:'flex-start', flexWrap: 'wrap', animation: 'fadeIn 0.4s ease-out', paddingBottom: '3rem'}}>
-                            
                             <div style={{flex: '1 1 500px', display:'flex', flexDirection:'column'}}>
                                 <div ref={imgContainerRef} onMouseMove={handleMouseMove} onMouseLeave={() => setZoomStyle({ opacity: 0 })} style={{position:'relative', display:'flex', justifyContent:'center', alignItems:'center', background:'#fff', borderRadius:'24px', padding:'10px', height:'500px', border:'1px solid #e2e8f0', cursor:'crosshair', overflow:'hidden'}}>
-                                    {currentMainImg ? ( <img src={currentMainImg} alt={product.description} style={{maxWidth:'100%', maxHeight:'100%', objectFit:'contain', zIndex: 1}} /> ) : ( <div style={{display:'flex', flexDirection:'column', alignItems:'center', color:'#cbd5e1'}}><ImageIcon size={60} strokeWidth={1} /><p style={{fontSize:'1rem', marginTop:16}}>Imagem não encontrada</p></div> )}
+                                    {/* LAZY LOADING AQUI */}
+                                    {currentMainImg ? ( <img src={currentMainImg} alt={product.description} loading="lazy" decoding="async" style={{maxWidth:'100%', maxHeight:'100%', objectFit:'contain', zIndex: 1}} /> ) : ( <div style={{display:'flex', flexDirection:'column', alignItems:'center', color:'#cbd5e1'}}><ImageIcon size={60} strokeWidth={1} /><p style={{fontSize:'1rem', marginTop:16}}>Imagem não encontrada</p></div> )}
                                     {currentMainImg && ( <div style={{...zoomStyle, position:'absolute', top:0, left:0, width:'100%', height:'100%', pointerEvents:'none', zIndex: 2, transition: 'opacity 0.2s ease-out'}} /> )}
                                 </div>
 
@@ -207,7 +203,8 @@ export default function ProductAnalysis() {
                                     <div style={{display:'flex', gap:'12px', overflowX:'auto', padding:'16px 0', justifyContent:'center'}}>
                                         {product.images.filter(i => i.type === activeImgCategory).map((img, index) => (
                                             <div key={index} onClick={() => setCurrentMainImg(img.url)} style={{width:'70px', height:'70px', flexShrink:0, background:'#fff', borderRadius:'12px', cursor:'pointer', border: currentMainImg === img.url ? '2px solid #0f172a' : '1px solid #e2e8f0', opacity: currentMainImg === img.url ? 1 : 0.6, transition:'all 0.2s', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center'}}>
-                                                <img src={img.url} style={{maxWidth:'90%', maxHeight:'90%', objectFit:'contain'}} />
+                                                {/* LAZY LOADING AQUI */}
+                                                <img src={img.url} loading="lazy" decoding="async" style={{maxWidth:'90%', maxHeight:'90%', objectFit:'contain'}} />
                                             </div>
                                         ))}
                                     </div>
@@ -222,7 +219,6 @@ export default function ProductAnalysis() {
                                         <button onClick={handleCopySku} style={{background:'transparent', border:'none', cursor:'pointer', color: copied ? '#10b981' : '#94a3b8', display:'flex', alignItems:'center', padding:'4px'}} title="Copiar SKU">{copied ? <CheckCircle size={16} /> : <Copy size={16} />}</button>
                                     </div>
                                 </div>
-                                
                                 <h1 style={{margin:'0 0 20px 0', fontSize:'2.2rem', color:'#0f172a', lineHeight:'1.2', fontWeight:800, letterSpacing:'-1px'}}>{product.description}</h1>
 
                                 <div style={{background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'16px', padding:'20px', marginBottom:'30px'}}>
@@ -230,7 +226,6 @@ export default function ProductAnalysis() {
                                         <h3 style={{margin:0, fontSize:'1rem', color:'#1e40af', fontWeight:700, display:'flex', alignItems:'center', gap:'8px'}}><Settings2 size={18}/> Simulador de Condições</h3>
                                         <button onClick={() => setShowSimulador(!showSimulador)} style={{fontSize:'0.75rem', color:'#64748b', background:'transparent', border:'none', cursor:'pointer', textDecoration:'underline'}}>{showSimulador ? 'Ocultar' : 'Mostrar'}</button>
                                     </div>
-                                    
                                     {showSimulador && (
                                         <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(130px, 1fr))', gap:'12px', marginBottom:'20px', animation:'fadeIn 0.2s'}}>
                                             <div><label style={{display:'block', fontSize:'0.7rem', fontWeight:600, color:'#64748b'}}>Expedição</label><select value={expedicao} onChange={e => setExpedicao(e.target.value)} style={{width:'100%', padding:'6px', borderRadius:'6px', border:'1px solid #cbd5e1', background:'#fff', fontSize:'0.8rem'}}><option value="UBÁ">UBÁ</option><option value="ATC-TO">ATC-TO</option><option value="SOO">SOO</option></select></div>
@@ -241,7 +236,6 @@ export default function ProductAnalysis() {
                                             <div><label style={{display:'block', fontSize:'0.7rem', fontWeight:600, color:'#64748b'}}>Cliente</label><select value={clientTier} onChange={e => setClientTier(e.target.value)} style={{width:'100%', padding:'6px', borderRadius:'6px', border:'1px solid #cbd5e1', background:'#fff', fontSize:'0.8rem'}}><option value="0">Padrão</option><option value="0.09">Ouro (9%)</option><option value="0.12">Diamante (12%)</option><option value="0.09">E-commerce (9%)</option></select></div>
                                         </div>
                                     )}
-
                                     <div style={{display:'flex', alignItems:'flex-end', justifyContent:'space-between', borderTop:'1px solid #e2e8f0', paddingTop:'16px'}}>
                                         <div style={{display:'flex', flexDirection:'column'}}>
                                             <span style={{fontSize:'0.75rem', fontWeight:700, color:'#64748b', textTransform:'uppercase'}}>Preço Calculado</span>
